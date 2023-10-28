@@ -17,8 +17,7 @@ services:
     volumes:
       - db-data:/var/lib/mysql
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.110
+      - backnet
     environment:
       - MYSQL_DATABASE=example
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
@@ -36,8 +35,7 @@ services:
     ports:
       - 19006:9006
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.62
+      - backnet
     depends_on:
       db:
         condition: service_healthy
@@ -49,8 +47,7 @@ services:
     ports:
       - 19007:9006
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.65
+      - backnet
   backend3:
     build:
       context: backend3
@@ -59,8 +56,7 @@ services:
     ports:
       - 19008:9006
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.203
+      - backnet
   backend4:
     build:
       context: backend4
@@ -69,25 +65,29 @@ services:
     ports:
       - 19009:9006
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.186
+      - backnet
+
   ## 上面的backend/db 是后端服务用例, 测试Docker in Docker
   proxy_nginx: 
     build:
       context: .
       dockerfile: Nginx
     restart: always
+#    network_mode: host # 在服务器上部署时建议使用 host,同时屏蔽下面的 ports 和 networks
     ports:
       - "8888:80"
     container_name: proxy_nginx
+    environment:
+      # 自定义的redis 相关环境变量
+      - TZ=Asia/Shanghai
     depends_on:
       - backend1
       - backend2
       - backend3
       - backend4
     networks:
-      proxy_network: 
-        ipv4_address: 192.168.1.112
+      - backnet
+      - frontnet
 
 volumes:
   db-data:
@@ -97,9 +97,5 @@ secrets:
     file: db/password.txt
 
 networks:
-  proxy_network:
-    name: "proxy_network"
-    driver: "bridge"
-    ipam:
-      config:
-        - subnet: 192.168.1.0/24
+  backnet:
+  frontnet:
