@@ -27,5 +27,5 @@ docker logs -f proxy_nginx
 ### cli 测试代码示例
 
 ```sh
-https://orange-fiesta-7r55q7rj5rwfx444-8888.app.github.dev/
+curl -v http://127.0.0.1:30000
 ```
