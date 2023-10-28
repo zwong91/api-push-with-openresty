@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+**/__pycache__
+docker_buildx
+tests
+.dockerignore
+Dockerfile
+docker-compose.yml
