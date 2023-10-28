@@ -6,6 +6,7 @@ on:
       - '*'
 
 env:
+  dockerfile: './Nginx'
   platform: 'linux/amd64'
   image_name: 'kim2023/api-push-with-openresty'
 
@@ -37,5 +38,6 @@ jobs:
           context: .
           push: true
           platform: ${{ env.platform }}
+          dockerFile: ${{ env.dockerfile }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
