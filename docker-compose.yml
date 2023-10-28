@@ -1,0 +1,105 @@
+version: '3.8'
+services:
+  db:
+    # We use a mariadb image which supports both amd64 & arm64 architecture
+    image: mariadb:10-focal
+    # If you really want to use MySQL, uncomment the following line
+    #image: mysql:8
+    command: '--default-authentication-plugin=mysql_native_password'
+    restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
+      interval: 3s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.110
+    environment:
+      - MYSQL_DATABASE=example
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    expose:
+      - 3306
+      - 33060
+
+  backend1:
+    build:
+      context: backend1
+      target: builder
+    restart: always
+    secrets:
+      - db-password
+    ports:
+      - 19006:9006
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.62
+    depends_on:
+      db:
+        condition: service_healthy
+  backend2:
+    build:
+      context: backend2
+      target: builder
+    restart: always
+    ports:
+      - 19007:9006
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.65
+  backend3:
+    build:
+      context: backend3
+      target: builder
+    restart: always
+    ports:
+      - 19008:9006
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.203
+  backend4:
+    build:
+      context: backend4
+      target: builder
+    restart: always
+    ports:
+      - 19009:9006
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.186
+  ## 上面的backend/db 是后端服务用例, 测试Docker in Docker
+  proxy_nginx: 
+    build:
+      context: .
+      dockerfile: Nginx
+    restart: always
+    ports:
+      - "8888:80"
+    container_name: proxy_nginx
+    depends_on:
+      - backend1
+      - backend2
+      - backend3
+      - backend4
+    networks:
+      proxy_network: 
+        ipv4_address: 192.168.1.112
+
+volumes:
+  db-data:
+
+secrets:
+  db-password:
+    file: db/password.txt
+
+networks:
+  proxy_network:
+    name: "proxy_network"
+    driver: "bridge"
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
