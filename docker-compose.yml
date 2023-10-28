@@ -71,7 +71,7 @@ services:
   proxy_nginx: 
     build:
       context: .
-      dockerfile: Nginx
+      dockerfile: Dockerfile
     restart: always
 #    network_mode: host # 在服务器上部署时建议使用 host,同时屏蔽下面的 ports 和 networks
     ports:
