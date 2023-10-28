@@ -6,7 +6,7 @@ on:
       - 'main'
 
 env:
-  dockerfile: './Nginx'
+  dockerfile: './Dockerfile'
   platform: 'linux/amd64'
   image_name: 'kim2023/api-push-with-openresty'
 
