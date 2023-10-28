@@ -7,3 +7,8 @@ tests
 .dockerignore
 Dockerfile
 docker-compose.yml
+backend1
+backend2
+backend3
+backend4
+.docker-test
