@@ -19,6 +19,6 @@ services:
     #   - backnet
     #   - frontnet
 
-networks:
-  backnet:
-  frontnet:
+# networks:
+#   backnet:
+#   frontnet:
