@@ -1,100 +1,23 @@
 version: '3.8'
 services:
-  db:
-    # We use a mariadb image which supports both amd64 & arm64 architecture
-    image: mariadb:10-focal
-    # If you really want to use MySQL, uncomment the following line
-    #image: mysql:8
-    command: '--default-authentication-plugin=mysql_native_password'
-    restart: always
-    healthcheck:
-      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
-      interval: 3s
-      retries: 5
-      start_period: 30s
-    secrets:
-      - db-password
-    volumes:
-      - db-data:/var/lib/mysql
-    networks:
-      - backnet
-    environment:
-      - MYSQL_DATABASE=example
-      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
-    expose:
-      - 3306
-      - 33060
-
-  backend1:
-    build:
-      context: backend1
-      target: builder
-    restart: always
-    secrets:
-      - db-password
-    ports:
-      - 19006:9006
-    networks:
-      - backnet
-    depends_on:
-      db:
-        condition: service_healthy
-  backend2:
-    build:
-      context: backend2
-      target: builder
-    restart: always
-    ports:
-      - 19007:9006
-    networks:
-      - backnet
-  backend3:
-    build:
-      context: backend3
-      target: builder
-    restart: always
-    ports:
-      - 19008:9006
-    networks:
-      - backnet
-  backend4:
-    build:
-      context: backend4
-      target: builder
-    restart: always
-    ports:
-      - 19009:9006
-    networks:
-      - backnet
-
-  ## 上面的backend/db 是后端服务用例, 测试Docker in Docker
   proxy_nginx: 
     build:
       context: .
       dockerfile: Dockerfile
     restart: always
-    # network_mode: host # 在服务器上部署时建议使用 host,同时屏蔽下面的 ports 和 networks
-    ports:
-      - "8888:80"
+    network_mode: host # 在服务器上部署时建议使用 host,同时屏蔽下面的 ports 和 networks
+    # ports:
+    #   - "8888:80"
+    #   - "8899:30000"
     container_name: proxy_nginx
     environment:
       # 自定义的redis 相关环境变量
       - TZ=Asia/Shanghai
-    depends_on:
-      - backend1
-      - backend2
-      - backend3
-      - backend4
-    networks:
-      - backnet
-      - frontnet
-
-volumes:
-  db-data:
-
-secrets:
-  db-password:
-    file: db/password.txt
+    # depends_on:
+    #   - backend1
+    # networks:
+    #   - backnet
+    #   - frontnet
 
 networks:
   backnet:
